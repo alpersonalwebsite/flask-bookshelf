@@ -8,6 +8,17 @@ from models import setup_db, Book
 
 BOOKS_PER_SHELF = 8
 
+def paginate_and_parse(request, data_list):
+  page = request.args.get('page', 1, type=int)
+  start = (page - 1) * BOOKS_PER_SHELF
+  end = start + BOOKS_PER_SHELF
+  print(start)
+  print(end)
+
+  formatted_books = [book.format() for book in data_list]
+  books_in_page = formatted_books[start:end]
+  return books_in_page
+
 def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
@@ -23,23 +34,18 @@ def create_app(test_config=None):
 
   @app.route('/books')
   def get_books():
-    page = request.args.get('page', 1, type=int)
-    start = (page - 1) * BOOKS_PER_SHELF
-    end = start + BOOKS_PER_SHELF
-
     books = Book.query.order_by(Book.id).all()
-    formatted_books = [book.format() for book in books]
+    formatted_books = paginate_and_parse(request, books)
 
     if len(formatted_books) == 0:
       abort(404)
 
     return jsonify({
       'success': True,
-      'books': formatted_books[start:end],
+      'books': formatted_books,
       'total_books': len(books)
     })
 
-  
   @app.route('/books/<int:book_id>', methods=['PATCH'])
   def update_book_rating(book_id):
 
@@ -63,20 +69,52 @@ def create_app(test_config=None):
     except:
       abort(404)
 
+  @app.route('/books/<int:book_id>', methods=['DELETE'])
+  def delete_book(book_id):
 
+    try:
+      book = Book.query.filter(Book.id == book_id).one_or_none()
 
-  # @TODO: Write a route that will delete a single book. 
-  #        Response body keys: 'success', 'deleted'(id of deleted book), 'books' and 'total_books'
-  #        Response body keys: 'success', 'books' and 'total_books'
+      if book is None:
+        abort(404)
 
-  # TEST: When completed, you will be able to delete a single book by clicking on the trashcan.
+      book.delete()
 
+      books = Book.query.order_by(Book.id).all()
+      formatted_books = paginate_and_parse(request, books)
 
-  # @TODO: Write a route that create a new book. 
-  #        Response body keys: 'success', 'created'(id of created book), 'books' and 'total_books'
-  # TEST: When completed, you will be able to a new book using the form. Try doing so from the last page of books. 
-  #       Your new book should show up immediately after you submit it at the end of the page. 
+      return jsonify({
+        'success': True,
+        'deleted': book_id,
+        'books': formatted_books,
+        'total_books': len(Book.query.all())
+      })
+
+    except:
+      abort(422)
+
+  @app.route('/books', methods=['POST'])
+  def add_book():
+
+    body = request.get_json() 
+    title = body.get('title', None)
+    author = body.get('author', None)
+    rating = body.get('rating', None)
+
+    try:
+      book = Book(title=title, author=author, rating=rating)
+      book.insert()
+
+      books = Book.query.order_by(Book.id).all()
+      formatted_books = paginate_and_parse(request, books)
+
+      return jsonify({
+        'success': True,
+        'created': book.id,
+        'books': formatted_books,
+        'total_books': len(Book.query.all())
+      })
+    except:
+      abort(422)
   
   return app
-
-    
