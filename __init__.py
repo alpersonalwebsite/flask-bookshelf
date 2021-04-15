@@ -12,8 +12,6 @@ def paginate_and_parse(request, data_list):
   page = request.args.get('page', 1, type=int)
   start = (page - 1) * BOOKS_PER_SHELF
   end = start + BOOKS_PER_SHELF
-  print(start)
-  print(end)
 
   formatted_books = [book.format() for book in data_list]
   books_in_page = formatted_books[start:end]
@@ -116,5 +114,37 @@ def create_app(test_config=None):
       })
     except:
       abort(422)
+
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+      'success': False, 
+      'error': 404,
+      'message': 'resource not found'
+      }), 404
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+      'success': False, 
+      'error': 422,
+      'message': 'unprocessable'
+      }), 422
+
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({
+      'success': False, 
+      'error': 400,
+      'message': 'bad request'
+      }), 400
+
+  @app.errorhandler(405)
+  def not_found(error):
+    return jsonify({
+      'success': False, 
+      'error': 405,
+      'message': 'method not allowed'
+      }), 405
   
   return app

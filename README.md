@@ -23,6 +23,12 @@ pip3 install -r requirements.txt
 1. Run the setup: `\i setup.sql`
 1. Populate data: `psql -f books.psql -U student -d bookshelf`
 
+### Populate the test database
+
+```bash
+bash setup.sh
+```
+
 ## Set the proper env variables and run the project
 
 ```bash
@@ -64,13 +70,28 @@ python test_flaskr.py
 ```
 The first time you run the tests, omit the `dropdb` command. All tests are kept in that file and should be maintained as updates are made to app functionality. 
 
+-->
 
-Test:
+---
 
-Get books
-curl http://127.0.0.1:5000/books
+### Unit Tests
 
+```bash
+python3 test_flask_bookshelf.py
 ```
+
+
+### Testing endpoints manually
+
+#### Get (ALL) books
+
+```bash
+curl http://127.0.0.1:5000/books
+```
+
+Sample response:
+
+```json
 {
   "books": [
     {
@@ -127,9 +148,15 @@ curl http://127.0.0.1:5000/books
 }
 ```
 
-curl http://127.0.0.1:5000/books?page=2
+##### Get (ALL) books WITH pagination
 
+```bash
+curl http://127.0.0.1:5000/books?page=2
 ```
+
+Sample response:
+
+```json
 {
   "books": [
     {
@@ -186,44 +213,83 @@ curl http://127.0.0.1:5000/books?page=2
 }
 ```
 
+##### Get (ALL) books WITH pagination WITH NO existent page
+
+```bash
 curl http://127.0.0.1:5000/books?page=4
+```
 
 Based on a collection of 16 elements (books) and a page size of 8 
 
-```
+Sample response without `@app.errorhandler` decorator
+
+```html
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <title>404 Not Found</title>
 <h1>Not Found</h1>
 <p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
 ```
 
-Update book
+Sample response WITH `@app.errorhandler` decorator
 
-curl http://127.0.0.1:5000/books/8 -X PATCH -H "Content-Type: application/json" -d '{"rating":"1"}'
-
+```json
+{
+  "error": 404, 
+  "message": "resource not found", 
+  "success": false
+}
 ```
+
+#### Partial update of book
+
+```bash
+curl http://127.0.0.1:5000/books/8 -X PATCH -H "Content-Type: application/json" -d '{"rating":"1"}'
+```
+
+Sample response:
+
+```json
 {
   "id": 8, 
   "success": true
 }
 ```
 
-Non existing book
+##### Partial update of a non-existing book
 
+```bash
 curl http://127.0.0.1:5000/books/888 -X PATCH -H "Content-Type: application/json" -d '{"rating":"1"}'
-
 ```
+
+Sample response without `@app.errorhandler` decorator
+
+```html
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <title>404 Not Found</title>
 <h1>Not Found</h1>
 <p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
 ```
 
-Delete book
+Sample response WITH `@app.errorhandler` decorator
 
-curl -X DELETE http://127.0.0.1:5000/books/8 
-
+```json
+{
+  "error": 404, 
+  "message": "resource not found", 
+  "success": false
+}
 ```
+
+
+
+#### Delete a book
+
+```bash
+curl -X DELETE http://127.0.0.1:5000/books/8 
+```
+Sample response:
+
+```json
 {
   "books": [
     {
@@ -281,22 +347,39 @@ curl -X DELETE http://127.0.0.1:5000/books/8
 }
 ```
 
-Non exiting book
+##### Delete a non-existing book
 
+```bash
 curl -X DELETE http://127.0.0.1:5000/books/888
-
 ```
+
+Sample response without `@app.errorhandler` decorator
+
+```html
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <title>422 Unprocessable Entity</title>
 <h1>Unprocessable Entity</h1>
 <p>The request was well-formed but was unable to be followed due to semantic errors.</p>
 ```
 
-Create a new book
+Sample response WITH `@app.errorhandler` decorator
 
-curl -X POST -H "Content-Type: application/json" -d '{"title":"This is a title", "author":"This is the Author", "rating":"3"}' http://127.0.0.1:5000/books   
-
+```json
+{
+  "error": 422, 
+  "message": "unprocessable", 
+  "success": false
+}
 ```
+
+#### Create a new book
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"title":"This is a title", "author":"This is the Author", "rating":"3"}' http://127.0.0.1:5000/books
+```
+Sample response:
+
+```json
 {
   "books": [
     {
@@ -352,4 +435,31 @@ curl -X POST -H "Content-Type: application/json" -d '{"title":"This is a title",
   "success": true, 
   "total_books": 16
 }
-``` -->
+```
+
+### Trying NOT allowed methods for a route/endpoint
+
+Example: POST a book to books/books_id (remember that you can only POST into the collection, /books)
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"title":"This is a title", "author":"This is the Author", "rating":"3"}' http://127.0.0.1:5000/books/1
+```
+
+Sample response without `@app.errorhandler` decorator
+
+```html
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<title>405 Method Not Allowed</title>
+<h1>Method Not Allowed</h1>
+<p>The method is not allowed for the requested URL.</p>
+```
+
+Sample response WITH `@app.errorhandler` decorator
+
+```json
+{
+  "error": 405, 
+  "message": "method not allowed", 
+  "success": false
+}
+```
