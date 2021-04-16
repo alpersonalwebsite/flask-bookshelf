@@ -463,3 +463,53 @@ Sample response WITH `@app.errorhandler` decorator
   "success": false
 }
 ```
+
+#### Search for a book
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"search":"novel"}' http://127.0.0.1:5000/books
+```
+Sample response:
+
+```json
+{
+  "books": [
+    {
+      "author": "Stephen King", 
+      "id": 1, 
+      "rating": 5, 
+      "title": "The Outsider: A Novel"
+    }, 
+    {
+      "author": "Jojo Moyes", 
+      "id": 5, 
+      "rating": 5, 
+      "title": "Still Me: A Novel"
+    }, 
+    {
+      "author": "Gina Apostol", 
+      "id": 9, 
+      "rating": 5, 
+      "title": "Insurrecto: A Novel"
+    }
+  ], 
+  "success": true, 
+  "total_books": 3
+}
+```
+
+##### Search with no results
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"search":"111111"}' http://127.0.0.1:5000/books
+```
+
+Sample response :
+
+```json
+{
+  "books": [], 
+  "success": true, 
+  "total_books": 0
+}
+```

@@ -99,19 +99,32 @@ def create_app(test_config=None):
     author = body.get('author', None)
     rating = body.get('rating', None)
 
+    search =body.get('search', None)
+
     try:
-      book = Book(title=title, author=author, rating=rating)
-      book.insert()
+      if search:
+        searched_books = Book.query.order_by(Book.id).filter(Book.title.ilike('%{}%'.format(search))).all()
+        formatted_books = paginate_and_parse(request, searched_books)
 
-      books = Book.query.order_by(Book.id).all()
-      formatted_books = paginate_and_parse(request, books)
+        return jsonify({
+          'success': True,
+          'books': formatted_books,
+          'total_books': len(searched_books)
+        })
 
-      return jsonify({
-        'success': True,
-        'created': book.id,
-        'books': formatted_books,
-        'total_books': len(Book.query.all())
-      })
+      else:
+        book = Book(title=title, author=author, rating=rating)
+        book.insert()
+
+        books = Book.query.order_by(Book.id).all()
+        formatted_books = paginate_and_parse(request, books)
+
+        return jsonify({
+          'success': True,
+          'created': book.id,
+          'books': formatted_books,
+          'total_books': len(Book.query.all())
+        })
     except:
       abort(422)
 
