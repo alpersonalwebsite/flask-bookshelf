@@ -15,6 +15,13 @@ class BookTestCase(unittest.TestCase):
         self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
 
+        # binds the app to the current context
+        with self.app.app_context():
+            self.db = SQLAlchemy()
+            self.db.init_app(self.app)
+            # create all tables
+            self.db.create_all()
+
         self.new_book = {
             'title': 'Title of Test Book',
             'author': 'Author of Test Book',

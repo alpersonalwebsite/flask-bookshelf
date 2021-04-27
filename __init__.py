@@ -99,7 +99,7 @@ def create_app(test_config=None):
     author = body.get('author', None)
     rating = body.get('rating', None)
 
-    search =body.get('search', None)
+    search = body.get('search', None)
 
     try:
       if search:
