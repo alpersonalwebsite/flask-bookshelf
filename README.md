@@ -8,11 +8,6 @@ Be sure you have `Python3`, `PostgreSQL` and `Node/NPM` installed on your machin
 ## Install dependencies
 
 ```
-pip3 install flask_sqlalchemy
-pip3 install flask_cors
-pip3 install flask --upgrade
-pip3 uninstall flask-socketio -y
-
 pip3 install -r requirements.txt
 ```
 
@@ -21,7 +16,7 @@ pip3 install -r requirements.txt
 1. Replace all occurrences of `YOUR_USERNAME` in `books.psql` with your active username. **Hint**: `whoami`
 1. Connect to PostgreSQL: `psql postgres`
 1. Run the setup: `\i setup.sql`
-1. Populate data: `psql -f books.psql -U student -d bookshelf`
+1. Populate data: `psql -f books.psql -U YOUR_USERNAME -d bookshelf`
 
 ### Populate the test database
 
